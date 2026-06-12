@@ -1,0 +1,48 @@
+#!ipxe
+# Main PXE boot menu. Served by nginx; edit freely - clients fetch it
+# fresh on every boot, no restarts needed.
+
+# Base URL of this server, derived from where this script was loaded from
+# (e.g. http://192.168.1.10:8080/). Used by submenus for ISO paths.
+set base-url ${cwduri}
+
+# Seconds before the default entry boots automatically (0 = wait forever)
+set menu-timeout 30000
+set menu-default local_isos
+
+# A little color, if this iPXE build supports it (|| = ignore otherwise)
+colour --rgb 0x29b6f6 1 ||
+colour --rgb 0xffffff 7 ||
+
+:start
+menu PXE Boot Menu  [${platform}/${buildarch}]  ${base-url}
+item --gap --             ------------------------- Boot -------------------------
+item local_isos           Local ISO library                  >
+item netboot              netboot.xyz - download any OS online >
+item --gap --             ------------------------ Tools ------------------------
+item shell                iPXE shell
+item reboot               Reboot
+item exit_to_disk         Continue normal boot from local disk
+choose --timeout ${menu-timeout} --default ${menu-default} selected || goto exit_to_disk
+set menu-timeout 0
+goto ${selected}
+
+:local_isos
+chain --replace ${base-url}menus/local.ipxe || goto start
+
+:netboot
+# Hand over to netboot.xyz's own menu (downloads OSes over the internet).
+iseq ${platform} efi && chain --autofree https://boot.netboot.xyz/ipxe/netboot.xyz.efi || chain --autofree https://boot.netboot.xyz/ipxe/netboot.xyz.kpxe
+goto start
+
+:shell
+echo Type 'exit' to return to the menu.
+shell
+goto start
+
+:reboot
+reboot
+
+:exit_to_disk
+# Fall out of iPXE so firmware continues with the next boot device.
+exit 0

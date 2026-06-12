@@ -1,0 +1,40 @@
+# dnsmasq as proxyDHCP + TFTP for PXE booting.
+# __PLACEHOLDERS__ are substituted from .env at container start.
+
+# We only do PXE here - disable the DNS server entirely.
+port=0
+
+# Log every DHCP/PXE interaction (view with: docker logs -f pxe-dnsmasq)
+log-dhcp
+
+# proxyDHCP mode: your router keeps handing out IP addresses; we only
+# supply the PXE boot information alongside it. No DHCP conflicts.
+dhcp-range=__SUBNET__,proxy
+
+# Built-in TFTP server for the first-stage iPXE binaries
+enable-tftp
+tftp-root=/tftpboot
+
+# --- Client firmware detection (DHCP option 93: client architecture) ---
+dhcp-match=set:bios,option:client-arch,0      # Legacy BIOS x86
+dhcp-match=set:efi64,option:client-arch,7     # UEFI x86-64
+dhcp-match=set:efi64,option:client-arch,9     # UEFI x86-64 (alt code)
+
+# --- iPXE detection (breaks the chainload loop) ---
+# Once iPXE is running it re-requests DHCP with user-class "iPXE";
+# at that point we hand it the HTTP menu instead of the binary again.
+dhcp-userclass=set:ipxe,iPXE
+
+# Stage 1: plain PXE firmware -> serve the matching iPXE binary via TFTP
+dhcp-boot=tag:!ipxe,tag:bios,undionly.kpxe
+dhcp-boot=tag:!ipxe,tag:efi64,ipxe.efi
+
+# Stage 2: iPXE -> chainload the menu over HTTP
+dhcp-boot=tag:ipxe,http://__UNRAID_IP__:__HTTP_PORT__/boot.ipxe
+
+# Required for proxyDHCP: announce ourselves as a PXE boot service.
+# tag:!ipxe is important - without it these entries would override the
+# HTTP menu URL for clients that are already running iPXE.
+pxe-prompt="Booting from network...",1
+pxe-service=tag:!ipxe,x86PC,"PXE boot (BIOS)",undionly.kpxe
+pxe-service=tag:!ipxe,x86-64_EFI,"PXE boot (UEFI)",ipxe.efi

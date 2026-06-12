@@ -1,0 +1,46 @@
+services:
+  dnsmasq:
+    image: 4km3/dnsmasq:2.90-r3
+    container_name: pxe-dnsmasq
+    # Host networking is mandatory: dnsmasq must see LAN DHCP broadcasts
+    # (UDP 67/68) and serve TFTP (UDP 69) + proxyDHCP (UDP 4011).
+    network_mode: host
+    cap_add:
+      - NET_ADMIN
+    environment:
+      - UNRAID_IP=${UNRAID_IP}
+      - SUBNET=${SUBNET}
+      - HTTP_PORT=${HTTP_PORT}
+    volumes:
+      - ./dnsmasq/dnsmasq.conf.template:/etc/dnsmasq.conf.template:ro
+      - ./tftp:/tftpboot:ro
+    # dnsmasq has no env-var support in its config, so render the
+    # template with sed before starting (-k = stay in foreground).
+    entrypoint: /bin/sh
+    command:
+      - -c
+      - |
+        sed -e "s|__UNRAID_IP__|$${UNRAID_IP}|g" \
+            -e "s|__SUBNET__|$${SUBNET}|g" \
+            -e "s|__HTTP_PORT__|$${HTTP_PORT}|g" \
+            /etc/dnsmasq.conf.template > /etc/dnsmasq.conf
+        exec dnsmasq -k --conf-file=/etc/dnsmasq.conf --log-facility=-
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:alpine
+    container_name: pxe-nginx
+    network_mode: host
+    environment:
+      - UNRAID_IP=${UNRAID_IP}
+      - HTTP_PORT=${HTTP_PORT}
+    volumes:
+      # *.template files are rendered with envsubst by the official
+      # nginx entrypoint into /etc/nginx/conf.d/
+      - ./nginx/default.conf.template:/etc/nginx/templates/default.conf.template:ro
+      - ./http:/usr/share/nginx/html:ro
+      # Your existing ISO library (adjust the host path if yours differs).
+      # Mounted OUTSIDE the web root on purpose - nginx maps /isos/ to it
+      # via an alias, which avoids nested-bind-mount problems.
+      - /mnt/user/isos:/srv/isos:ro
+    restart: unless-stopped

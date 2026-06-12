@@ -1,0 +1,26 @@
+# Rendered by the nginx image's entrypoint (envsubst on $VARS).
+server {
+    listen ${HTTP_PORT};
+    listen [::]:${HTTP_PORT};
+    server_name _;
+
+    root /usr/share/nginx/html;
+
+    # iPXE scripts and boot assets are plain files; no caching surprises.
+    add_header Cache-Control "no-cache";
+
+    # ISO library lives outside the web root (separate bind mount).
+    location /isos/ {
+        alias /srv/isos/;
+        autoindex on;
+        autoindex_exact_size off;
+    }
+    location /boot/ {
+        autoindex on;
+        autoindex_exact_size off;
+    }
+
+    location / {
+        try_files $uri $uri/ =404;
+    }
+}
