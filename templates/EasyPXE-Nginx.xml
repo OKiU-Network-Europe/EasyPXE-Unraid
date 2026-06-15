@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Container version="2">
+  <Name>EasyPXE-Nginx</Name>
+
+  <Repository>nginx:alpine</Repository>
+
+  <Registry>https://hub.docker.com/_/nginx</Registry>
+
+  <Network>host</Network>
+
+  <MyIP/>
+
+  <Shell>sh</Shell>
+
+  <Privileged>false</Privileged>
+
+  <Support>https://github.com/OKiU-Network-Europe/EasyPXE-Unraid/issues</Support>
+
+  <Project>https://github.com/OKiU-Network-Europe/EasyPXE-Unraid</Project>
+
+  <Overview>
+EasyPXE Nginx provides HTTP delivery of iPXE menus, boot files, kernels, initramfs files and ISO images.
+
+It is the HTTP component of the EasyPXE network boot stack and must be installed together with EasyPXE-DNSMasq.
+  </Overview>
+
+  <Category>Network:Web Tools:System</Category>
+
+  <WebUI>http://[IP]:[PORT:8080]/</WebUI>
+
+  <TemplateURL>
+https://raw.githubusercontent.com/OKiU-Network-Europe/EasyPXE-Unraid/main/templates/EasyPXE-Nginx.xml
+  </TemplateURL>
+
+  <Icon>
+https://raw.githubusercontent.com/OKiU-Network-Europe/EasyPXE-Unraid/main/icon.png
+  </Icon>
+
+  <ExtraParams/>
+
+  <PostArgs/>
+
+  <DateInstalled/>
+
+  <DonateText/>
+
+  <DonateLink/>
+
+  <Requires>
+EasyPXE-DNSMasq must also be installed and running. The configured HTTP port must not already be used by another application on the Unraid server.
+  </Requires>
+
+  <Config
+    Name="Unraid IP"
+    Target="UNRAID_IP"
+    Default="192.168.1.10"
+    Mode=""
+    Description="Static LAN IP address of the Unraid server."
+    Type="Variable"
+    Display="always"
+    Required="true"
+    Mask="false">192.168.1.10</Config>
+
+  <Config
+    Name="HTTP Port"
+    Target="HTTP_PORT"
+    Default="8080"
+    Mode=""
+    Description="Port used to serve EasyPXE menus, boot files and ISO images."
+    Type="Variable"
+    Display="always"
+    Required="true"
+    Mask="false">8080</Config>
+
+  <Config
+    Name="Nginx Configuration Template"
+    Target="/etc/nginx/templates/default.conf.template"
+    Default="/mnt/user/appdata/easypxe/nginx/default.conf.template"
+    Mode="ro"
+    Description="Path to the EasyPXE Nginx configuration template."
+    Type="Path"
+    Display="always"
+    Required="true"
+    Mask="false">/mnt/user/appdata/easypxe/nginx/default.conf.template</Config>
+
+  <Config
+    Name="EasyPXE HTTP Files"
+    Target="/usr/share/nginx/html"
+    Default="/mnt/user/appdata/easypxe/http"
+    Mode="ro"
+    Description="Directory containing boot.ipxe, menus, kernels and other HTTP boot files."
+    Type="Path"
+    Display="always"
+    Required="true"
+    Mask="false">/mnt/user/appdata/easypxe/http</Config>
+
+  <Config
+    Name="ISO Library"
+    Target="/srv/isos"
+    Default="/mnt/user/isos"
+    Mode="ro"
+    Description="Unraid directory containing ISO images exposed through EasyPXE."
+    Type="Path"
+    Display="always"
+    Required="true"
+    Mask="false">/mnt/user/isos</Config>
+</Container>

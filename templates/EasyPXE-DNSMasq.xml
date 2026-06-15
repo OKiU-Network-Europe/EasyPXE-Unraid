@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Container version="2">
+  <Name>EasyPXE-DNSMasq</Name>
+
+  <Repository>4km3/dnsmasq:2.90-r3</Repository>
+
+  <Registry>https://hub.docker.com/r/4km3/dnsmasq</Registry>
+
+  <Network>host</Network>
+
+  <MyIP/>
+
+  <Shell>sh</Shell>
+
+  <Privileged>false</Privileged>
+
+  <Support>https://github.com/OKiU-Network-Europe/EasyPXE-Unraid/issues</Support>
+
+  <Project>https://github.com/OKiU-Network-Europe/EasyPXE-Unraid</Project>
+
+  <Overview>
+EasyPXE DNSMasq provides proxyDHCP and TFTP services for the EasyPXE network boot stack.
+
+It works alongside your existing router DHCP server and supplies PXE boot information to Legacy BIOS and UEFI clients.
+
+This container requires host networking because it must receive DHCP broadcasts and provide TFTP and proxyDHCP services.
+  </Overview>
+
+  <Category>Network:Other Tools:System</Category>
+
+  <WebUI/>
+
+  <TemplateURL>
+https://raw.githubusercontent.com/OKiU-Network-Europe/EasyPXE-Unraid/main/templates/EasyPXE-DNSMasq.xml
+  </TemplateURL>
+
+  <Icon>
+https://raw.githubusercontent.com/OKiU-Network-Europe/EasyPXE-Unraid/main/icon.png
+  </Icon>
+
+  <ExtraParams>--cap-add=NET_ADMIN --entrypoint=/bin/sh</ExtraParams>
+
+  <PostArgs>
+-c 'sed -e "s|__UNRAID_IP__|${UNRAID_IP}|g" -e "s|__SUBNET__|${SUBNET}|g" -e "s|__HTTP_PORT__|${HTTP_PORT}|g" /etc/dnsmasq.conf.template &gt; /etc/dnsmasq.conf &amp;&amp; exec dnsmasq -k --conf-file=/etc/dnsmasq.conf --log-facility=-'
+  </PostArgs>
+
+  <DateInstalled/>
+
+  <DonateText/>
+
+  <DonateLink/>
+
+  <Requires>
+EasyPXE-Nginx must also be installed and running. The Unraid server must use a static LAN IP. No other PXE, TFTP, or proxyDHCP service may use UDP ports 69 or 4011 on the same host.
+  </Requires>
+
+  <Config
+    Name="Unraid IP"
+    Target="UNRAID_IP"
+    Default="192.168.1.10"
+    Mode=""
+    Description="Static LAN IP address of the Unraid server."
+    Type="Variable"
+    Display="always"
+    Required="true"
+    Mask="false">192.168.1.10</Config>
+
+  <Config
+    Name="LAN Subnet"
+    Target="SUBNET"
+    Default="192.168.1.0"
+    Mode=""
+    Description="LAN network address used by proxyDHCP. Enter the network address, not a DHCP range."
+    Type="Variable"
+    Display="always"
+    Required="true"
+    Mask="false">192.168.1.0</Config>
+
+  <Config
+    Name="HTTP Port"
+    Target="HTTP_PORT"
+    Default="8080"
+    Mode=""
+    Description="HTTP port used by the EasyPXE Nginx container."
+    Type="Variable"
+    Display="always"
+    Required="true"
+    Mask="false">8080</Config>
+
+  <Config
+    Name="DNSMasq Configuration Template"
+    Target="/etc/dnsmasq.conf.template"
+    Default="/mnt/user/appdata/easypxe/dnsmasq/dnsmasq.conf.template"
+    Mode="ro"
+    Description="Path to the EasyPXE dnsmasq configuration template."
+    Type="Path"
+    Display="always"
+    Required="true"
+    Mask="false">/mnt/user/appdata/easypxe/dnsmasq/dnsmasq.conf.template</Config>
+
+  <Config
+    Name="TFTP Boot Files"
+    Target="/tftpboot"
+    Default="/mnt/user/appdata/easypxe/tftp"
+    Mode="ro"
+    Description="Directory containing the Legacy BIOS and UEFI iPXE bootloader files."
+    Type="Path"
+    Display="always"
+    Required="true"
+    Mask="false">/mnt/user/appdata/easypxe/tftp</Config>
+</Container>
