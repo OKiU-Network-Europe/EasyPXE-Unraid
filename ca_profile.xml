@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CommunityApplications>
+  <Profile>
+    OKiU Network Europe maintains EasyPXE for Unraid, a self-hosted PXE boot environment using dnsmasq, nginx, iPXE, and netboot.xyz.
+
+    EasyPXE provides proxyDHCP, TFTP, and HTTP boot services for Legacy BIOS and UEFI systems while continuing to use the existing router as the primary DHCP server.
+
+    Source code, installation instructions, issue reporting, and support are available through the EasyPXE-Unraid GitHub repository.
+  </Profile>
+
+  <WebPage>https://github.com/OKiU-Network-Europe/EasyPXE-Unraid</WebPage>
+
+  <Forum>https://github.com/OKiU-Network-Europe/EasyPXE-Unraid/issues</Forum>
+</CommunityApplications>
